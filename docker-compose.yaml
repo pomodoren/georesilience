@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  geores:
+    container_name: geores
+    build: 
+      context: ./georesilience
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./georesilience:/app
+    env_file:
+      - .env  
+    networks:
+      - app-network
+    depends_on:
+      - geores-db
+
+  geores-db:
+    container_name: geores-db
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.db
+    restart: always
+    env_file:
+      - .env 
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./infra:/docker-entrypoint-initdb.d/
+      - database_volume:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    name: app-network
+    driver: bridge
+    ipam:
+      driver: default
+
+volumes:
+  database_volume:
